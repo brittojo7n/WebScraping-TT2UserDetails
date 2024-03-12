@@ -8,7 +8,7 @@ This repository contains a Python script (`main.py`) for scraping user details f
 ## Usage
 1. Clone this repository to your local machine:
    ```
-   https://github.com/brittojo7n/TotemTribe2-UserDetails.git
+   git clone https://github.com/brittojo7n/TotemTribe2-UserDetails.git
    ```
 
 2. Navigate to the project directory:
