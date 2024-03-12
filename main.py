@@ -88,7 +88,10 @@ def write_to_csv(user_details):
         writer.writerow(user_details)
 
 def check_and_scrape_missing_user_ids():
+    start_id = 528700  # Initial start ID
+    end_id = 528800  # Initial end ID
     iteration = 0
+
     while True:
         existing_user_ids = set()
 
@@ -97,8 +100,7 @@ def check_and_scrape_missing_user_ids():
             for row in reader:
                 existing_user_ids.add(int(row['User ID']))
 
-        all_user_ids = range(528000, 700000)
-        missing_user_ids = [user_id for user_id in all_user_ids if user_id not in existing_user_ids]
+        missing_user_ids = [user_id for user_id in range(start_id, end_id + 1) if user_id not in existing_user_ids]
 
         if missing_user_ids:
             iteration += 1
@@ -107,6 +109,14 @@ def check_and_scrape_missing_user_ids():
                 for user_id in missing_user_ids:
                     executor.submit(process_user, user_id)
                     time.sleep(random.uniform(0.5, 1))
+            
+            # Update start_id and end_id based on the last successful user ID fetched
+            for user_id in range(start_id, end_id + 1):
+                if user_id not in missing_user_ids and scrape_user_details(user_id):
+                    start_id = user_id + 1
+                    end_id = start_id + (end_id - start_id)
+                    break
+
         else:
             print("No missing user IDs found. Exiting loop.")
             break
