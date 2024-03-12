@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Details</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
+        /* Shared styles for both desktop and mobile */
         body {
             background-color: #080e15;
-            background-size: cover;
             color: #fff;
             font-family: Arial, sans-serif;
             padding: 20px;
+            margin: 0;
         }
 
         h1, h2 {
@@ -45,11 +47,11 @@
         }
 
         .user-details-container {
-            max-width: 800px;
             margin: 0 auto;
             background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
+            box-sizing: border-box;
         }
 
         table {
@@ -66,6 +68,28 @@
         th {
             background-color: #00ffff;
             color: #000;
+        }
+
+        /* Styles specific to desktop view */
+        @media (min-width: 768px) {
+            body {
+                background-size: cover;
+            }
+
+            .user-details-container {
+                max-width: 800px;
+            }
+        }
+
+        /* Styles specific to mobile view */
+        @media (max-width: 767px) {
+            input[type="text"], input[type="submit"] {
+                width: calc(100% - 22px);
+            }
+
+            .user-details-container {
+                width: calc(100% - 40px);
+            }
         }
     </style>
 </head>
