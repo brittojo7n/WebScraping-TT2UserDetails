@@ -8,12 +8,12 @@ This repository contains a Python script (`main.py`) for scraping user details f
 ## Usage
 1. Clone this repository to your local machine:
    ```
-   git clone https://github.com/brittojo7n/totem-tribe-2-userdetails.git
+   https://github.com/brittojo7n/TotemTribe2-UserDetails.git
    ```
 
 2. Navigate to the project directory:
    ```
-   cd totem-tribe-2-userdetails
+   cd TotemTribe2-UserDetails
    ```
 
 3. Install the required Python packages:
@@ -30,9 +30,9 @@ This repository contains a Python script (`main.py`) for scraping user details f
 
 ## Dataset
 The `tt2.csv` file contains the following columns:
-- `UserID`: Unique identifier for each user.
-- `AccountName`: Username associated with the account.
-- `RegisteredDateTime`: Date and time when the account was registered.
+- `User ID`: Unique identifier for each user.
+- `Enkord account full name`: Account name associated with the user.
+- `Registered`: Date and time when the account was registered.
 
 ## Disclaimer
 This project is for educational purposes only. The creator of this script and dataset is not responsible for any misuse or violation of website Terms of Service resulting from the use of this script.
