@@ -1,7 +1,9 @@
 # Totem Tribe 2 UserDetails Scraping
 
 ## Overview
-This repository contains a Python script (`main.py`) for scraping user details from the Totem Tribe 2 website and storing them in a CSV file (`tt2.csv`). The dataset includes user IDs, account names, and registration dates and times.
+This repository contains a Python script (`main.py`) designed for scraping user details from the Totem Tribe 2 website. The scraped data is then stored in a CSV file (`tt2.csv`). The dataset includes user IDs, account names, and registration dates and times.
+
+Additionally, a self-hosted web application (`app.py`) is provided to allow users to view specific user details. By accessing `localhost:80` in a web browser and entering the account name, users can retrieve detailed information about the user from the scraped dataset.
 
 **Note:** This project is purely educational and serves as an example of web scraping techniques. The creator of this script and dataset is not affiliated with Enkord, Ltd., the company behind Totem Tribe 2. Please be aware that web scraping may violate a website's Terms of Service.
 
@@ -38,9 +40,3 @@ The `tt2.csv` file contains the following columns:
 This project is for educational purposes only. The creator of this script and dataset is not responsible for any misuse or violation of website Terms of Service resulting from the use of this script.
 
 **Warning:** Web scraping can lead to legal issues if not used responsibly and in compliance with a website's Terms of Service.
-
-## Contribution
-Contributions to this project are welcome! Feel free to open an issue or submit a pull request with any improvements or suggestions.
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
