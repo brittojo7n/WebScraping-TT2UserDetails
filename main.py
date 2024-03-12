@@ -88,20 +88,28 @@ def write_to_csv(user_details):
         writer.writerow(user_details)
 
 def check_and_scrape_missing_user_ids():
-    existing_user_ids = set()
+    iteration = 0
+    while True:
+        existing_user_ids = set()
 
-    with open('tt2.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            existing_user_ids.add(int(row['User ID']))
+        with open('tt2.csv', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                existing_user_ids.add(int(row['User ID']))
 
-    all_user_ids = range(528000, 700000)
-    missing_user_ids = [user_id for user_id in all_user_ids if user_id not in existing_user_ids]
+        all_user_ids = range(528000, 700000)
+        missing_user_ids = [user_id for user_id in all_user_ids if user_id not in existing_user_ids]
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        for user_id in missing_user_ids:
-            executor.submit(process_user, user_id)
-            time.sleep(random.uniform(0.5, 1))
+        if missing_user_ids:
+            iteration += 1
+            print(f"Iteration {iteration}: Processing missing user IDs...")
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                for user_id in missing_user_ids:
+                    executor.submit(process_user, user_id)
+                    time.sleep(random.uniform(0.5, 1))
+        else:
+            print("No missing user IDs found. Exiting loop.")
+            break
 
 if __name__ == "__main__":
     check_and_scrape_missing_user_ids()
