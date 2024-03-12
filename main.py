@@ -104,18 +104,11 @@ def check_and_scrape_missing_user_ids():
 
         if missing_user_ids:
             iteration += 1
-            print(f"Iteration {iteration}: Processing missing user IDs...")
+            print(f"Iteration {iteration}: Range {start_id} - {end_id}")
             with ThreadPoolExecutor(max_workers=4) as executor:
                 for user_id in missing_user_ids:
                     executor.submit(process_user, user_id)
                     time.sleep(random.uniform(0.5, 1))
-            
-            # Update start_id and end_id based on the last successful user ID fetched
-            for user_id in range(start_id, end_id + 1):
-                if user_id not in missing_user_ids and scrape_user_details(user_id):
-                    start_id = user_id + 1
-                    end_id = start_id + (end_id - start_id)
-                    break
 
         else:
             print("No missing user IDs found. Exiting loop.")
