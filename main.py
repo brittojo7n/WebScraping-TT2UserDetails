@@ -88,8 +88,8 @@ def write_to_csv(user_details):
         writer.writerow(user_details)
 
 def check_and_scrape_missing_user_ids():
-    start_id = 528700  # Initial start ID
-    end_id = 528800  # Initial end ID
+    start_id = 528000  # Initial start ID
+    end_id = 529000 # Initial end ID
     iteration = 0
 
     while True:
