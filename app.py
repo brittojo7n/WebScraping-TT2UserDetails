@@ -4,7 +4,7 @@ import pandas as pd
 app = Flask(__name__)
 
 def get_user_details(account_name):
-    df = pd.read_csv('tt2.csv')
+    df = pd.read_csv('tt2_players.csv')
     account_name = account_name.lower() 
     df_lower = df['Enkord account full name'].str.lower()  
     if account_name in df_lower.values:

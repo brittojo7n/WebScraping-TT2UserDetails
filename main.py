@@ -78,7 +78,7 @@ def process_user(user_id):
         write_to_csv(user_details)
 
 def write_to_csv(user_details):
-    with open('tt2.csv', 'a', newline='', encoding='utf-8') as csvfile:
+    with open('tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
         fieldnames = list(user_details.keys())
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -95,7 +95,7 @@ def check_and_scrape_missing_user_ids():
     while True:
         existing_user_ids = set()
 
-        with open('tt2.csv', newline='', encoding='utf-8') as csvfile:
+        with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 existing_user_ids.add(int(row['User ID']))
