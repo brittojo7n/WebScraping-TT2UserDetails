@@ -9,11 +9,12 @@ echo Made by: brittojo7n
 echo -------------------------
 echo 1. Run index.py (Scrape Players)
 echo 2. Run server.py (Web Server To View Details)
-echo 3. Exit
+echo 3. Run sort.py (Sort dataset)
+echo 4. Exit
 echo.
 
 :menu
-set /p choice="Enter your choice (1-3): "
+set /p choice="Enter your choice (1-4): "
 
 if "%choice%"=="1" (
     echo Running index.py...
@@ -26,6 +27,11 @@ if "%choice%"=="1" (
     pause
     goto menu
 ) else if "%choice%"=="3" (
+    echo Running sort.py...
+    python sort.py
+    pause
+    goto menu
+) else if "%choice%"=="4" (
     exit
 ) else (
     echo Invalid choice. Please try again.
