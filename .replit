@@ -7,3 +7,7 @@ channel = "stable-23_05"
 [deployment]
 run = ["sh", "-c", "bash main.sh"]
 deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 80
+externalPort = 80
