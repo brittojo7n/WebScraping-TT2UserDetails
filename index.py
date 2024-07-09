@@ -5,16 +5,18 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def requests_retry_session(
-    retries=5,
-    backoff_factor=1,
-    status_forcelist=(500, 502, 503, 504),
-    session=None,
+        retries=5,
+        backoff_factor=1,
+        status_forcelist=(500, 502, 503, 504),
+        session=None,
 ):
     session = session or requests.Session()
     retry = Retry(
@@ -29,6 +31,7 @@ def requests_retry_session(
     session.mount('https://', adapter)
     return session
 
+
 def scrape_user_details(user_id):
     url = f"https://www.enkord.com/account/{user_id}/"
     try:
@@ -40,10 +43,12 @@ def scrape_user_details(user_id):
         elif response.status_code == 404:
             logging.warning(f"User details not found for ID: {user_id}")
         else:
-            response.raise_for_status()  # Raise exception for other bad responses (4xx or 5xx)
+            response.raise_for_status(
+            )  # Raise exception for other bad responses (4xx or 5xx)
     except requests.RequestException as e:
         logging.error(f"Error fetching URL {url}: {e}")
     return None
+
 
 def parse_user_details(html_content, user_id):
     user_details = {'User ID': user_id}
@@ -51,7 +56,8 @@ def parse_user_details(html_content, user_id):
 
     user_info = soup.find('div', class_='account-info')
     if user_info:
-        user_details['Enkord account full name'] = user_info.find('b').text.strip()
+        user_details['Enkord account full name'] = user_info.find(
+            'b').text.strip()
         registered_span = user_info.find('span', title=True)
         if registered_span:
             registered_title = registered_span['title']
@@ -65,17 +71,22 @@ def parse_user_details(html_content, user_id):
                 games_list = []
                 for account in accounts_in_games:
                     game_name = account.find('b').text.strip()
-                    accounts_list = [item.text.strip() for item in account.find_all('li')[1:]]
+                    accounts_list = [
+                        item.text.strip()
+                        for item in account.find_all('li')[1:]
+                    ]
                     games_list.append({game_name: accounts_list})
                 user_details['Accounts in games'] = games_list
 
     return user_details
+
 
 def process_user(user_id):
     user_details = scrape_user_details(user_id)
     if user_details:
         logging.info(f"Fetched user details for ID: {user_id}")
         write_to_csv(user_details)
+
 
 def write_to_csv(user_details):
     with open('tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
@@ -87,9 +98,10 @@ def write_to_csv(user_details):
 
         writer.writerow(user_details)
 
+
 def check_and_scrape_missing_user_ids():
     start_id = 528000  # Initial start ID
-    end_id = 530000 # Initial end ID
+    end_id = 600000  # Initial end ID
     iteration = 0
 
     while True:
@@ -100,7 +112,10 @@ def check_and_scrape_missing_user_ids():
             for row in reader:
                 existing_user_ids.add(int(row['User ID']))
 
-        missing_user_ids = [user_id for user_id in range(start_id, end_id + 1) if user_id not in existing_user_ids]
+        missing_user_ids = [
+            user_id for user_id in range(start_id, end_id + 1)
+            if user_id not in existing_user_ids
+        ]
 
         if missing_user_ids:
             iteration += 1
@@ -114,6 +129,6 @@ def check_and_scrape_missing_user_ids():
             print("No missing user IDs found. Exiting loop.")
             break
 
+
 if __name__ == "__main__":
     check_and_scrape_missing_user_ids()
-    
