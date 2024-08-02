@@ -100,8 +100,8 @@ def write_to_csv(user_details):
 
 
 def check_and_scrape_missing_user_ids():
-    start_id = 0  # Initial start ID
-    end_id = 600000  # Initial end ID
+    start_id = 500000  # Initial start ID
+    end_id = 999999  # Initial end ID
     iteration = 0
 
     while True:
