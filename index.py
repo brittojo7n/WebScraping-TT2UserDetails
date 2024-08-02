@@ -100,7 +100,7 @@ def write_to_csv(user_details):
 
 
 def check_and_scrape_missing_user_ids():
-    start_id = 528000  # Initial start ID
+    start_id = 0  # Initial start ID
     end_id = 600000  # Initial end ID
     iteration = 0
 
@@ -123,7 +123,7 @@ def check_and_scrape_missing_user_ids():
             with ThreadPoolExecutor(max_workers=4) as executor:
                 for user_id in missing_user_ids:
                     executor.submit(process_user, user_id)
-                    time.sleep(random.uniform(0.5, 1))
+                    time.sleep(random.uniform(0.2, 0.8))
 
         else:
             print("No missing user IDs found. Exiting loop.")
