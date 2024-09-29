@@ -1,7 +1,7 @@
 # Totem Tribe 2 UserDetails Scraping
 
 ## Overview
-This repository contains a Python script (`main.py`) designed for scraping user details from the Totem Tribe 2 website. The scraped data is then stored in a CSV file (`tt2.csv`). The dataset includes user IDs, account names, and registration dates and times.
+This repository contains a Python script (`index.py`) designed for scraping user details from the Totem Tribe 2 website. The scraped data is then stored in a CSV file (`tt2_players.csv`). The dataset includes user IDs, account names, and registration dates and times.
 
 Additionally, a self-hosted web application (`app.py`) is provided to allow users to view specific user details. By accessing `localhost:80` in a web browser and entering the account name, users can retrieve detailed information about the user from the scraped dataset. **You may also change the host and port within the `app.py` file.**
 
@@ -20,18 +20,19 @@ Additionally, a self-hosted web application (`app.py`) is provided to allow user
 
 3. Install the required Python packages:
    ```
-   pip install -r requirements.txt
+   pip install requests
+   pip install beautifulsoup4
    ```
 
-4. Run the `main.py` script to update the `tt2.csv` file with newer user entries:
+4. Run the `index.py` script to update the `tt2_players.csv` file with newer user entries:
    ```
-   python main.py
+   python index.py
    ```
 
-5. Optionally, customize the range of user IDs being checked and appended to `tt2.csv` by editing the `main.py` file.
+5. Optionally, customize the range of user IDs being checked and appended to `tt2_players.csv` by editing the `index.py` file.
 
 ## Dataset
-The `tt2.csv` file contains the following columns:
+The `tt2_players.csv` file contains the following columns:
 - `User ID`: Unique identifier for each user.
 - `Enkord account full name`: Account name associated with the user.
 - `Registered`: Date and time when the account was registered.
