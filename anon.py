@@ -64,7 +64,7 @@ def parse_user_details(html_content, user_id):
 
 
 def filter_out_anonymous_from_csv():
-    """Remove rows with anonymous accounts from the CSV file and return only non-anonymous data."""
+    """Remove rows with anonymous accounts (case-insensitive) from the CSV file and return non-anonymous data."""
     non_anonymous_data = []
     anonymous_accounts = []
 
@@ -72,7 +72,8 @@ def filter_out_anonymous_from_csv():
         with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                if row['Enkord account full name'].startswith("Anonymous#"):
+                # Case-insensitive check for "anonymous#"
+                if row['Enkord account full name'].lower().startswith("anonymous#"):
                     anonymous_accounts.append(row)
                 else:
                     non_anonymous_data.append(row)
@@ -106,7 +107,7 @@ def recheck_user(user_id):
     """Recheck a user account, fetch the true name if available, and write updated data to CSV."""
     user_details = scrape_user_details(user_id)
     if user_details:
-        if not user_details['Enkord account full name'].startswith("Anonymous#"):
+        if not user_details['Enkord account full name'].lower().startswith("anonymous#"):
             logging.info(f"True name found for User ID: {user_id} - {user_details['Enkord account full name']}")
         else:
             logging.info(f"No change for User ID: {user_id}, still Anonymous.")
@@ -131,7 +132,7 @@ def write_to_csv(user_details):
 
 
 if __name__ == "__main__":
-    # Step 1: Remove anonymous accounts from the CSV and get the list of removed accounts
+    # Step 1: Remove anonymous accounts (case-insensitive) from the CSV and get the list of removed accounts
     anonymous_accounts = filter_out_anonymous_from_csv()
 
     # Step 2: Recheck each anonymous account for updates and write the updated info to the CSV
