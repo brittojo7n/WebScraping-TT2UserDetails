@@ -32,6 +32,7 @@ def requests_retry_session(
 
 
 def scrape_user_details(user_id):
+    """Scrape user details from the webpage."""
     url = f"https://www.enkord.com/account/{user_id}/"
     try:
         response = requests_retry_session().get(url)
@@ -49,6 +50,7 @@ def scrape_user_details(user_id):
 
 
 def parse_user_details(html_content, user_id):
+    """Parse the scraped HTML to extract user details."""
     user_details = {'User ID': user_id}
     soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -63,56 +65,69 @@ def parse_user_details(html_content, user_id):
     return user_details
 
 
-def filter_out_anonymous_from_csv():
-    """Remove rows with anonymous accounts (case-insensitive) from the CSV file and return non-anonymous data."""
-    non_anonymous_data = []
-    anonymous_accounts = []
+def check_and_update_anonymous_accounts():
+    """Recheck each anonymous account in the CSV and only update if it's no longer anonymous."""
+    accounts_to_check = []
 
+    # Step 1: Read existing CSV and find anonymous accounts (case-insensitive)
     try:
         with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                # Case-insensitive check for "anonymous#"
                 if row['Enkord account full name'].lower().startswith("anonymous#"):
-                    anonymous_accounts.append(row)
-                else:
-                    non_anonymous_data.append(row)
-
-        # Write back only non-anonymous data to the CSV file
-        with open('tt2_players.csv', 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = reader.fieldnames
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(non_anonymous_data)
+                    accounts_to_check.append(row)
     except FileNotFoundError:
-        logging.warning(f"File 'tt2_players.csv' not found. Starting fresh.")
+        logging.warning("CSV file not found. Starting fresh.")
+        return
     except Exception as e:
-        logging.error(f"Error reading or writing to file: {e}")
+        logging.error(f"Error reading CSV: {e}")
+        return
 
-    return anonymous_accounts  # Return the list of removed anonymous accounts
-
-
-def recheck_and_update_anonymous_accounts(anonymous_accounts):
-    """Recheck anonymous accounts, fetch their true names, and write the updated data to CSV."""
-    logging.info(f"Rechecking {len(anonymous_accounts)} anonymous accounts...")
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        for account in anonymous_accounts:
-            user_id = account['User ID']
-            executor.submit(recheck_user, user_id)
-            time.sleep(random.uniform(0.2, 0.8))  # Simulate staggered processing
+    # Step 2: Process each anonymous account and check if it's still anonymous
+    if accounts_to_check:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            for account in accounts_to_check:
+                user_id = account['User ID']
+                executor.submit(recheck_and_update_user, user_id)
+                time.sleep(random.uniform(0.2, 0.8))  # Simulate staggered processing
+    else:
+        logging.info("No Anonymous accounts found to check.")
 
 
-def recheck_user(user_id):
-    """Recheck a user account, fetch the true name if available, and write updated data to CSV."""
+def recheck_and_update_user(user_id):
+    """Recheck a user account to see if their true name is available, then update CSV."""
     user_details = scrape_user_details(user_id)
     if user_details:
         if not user_details['Enkord account full name'].lower().startswith("anonymous#"):
             logging.info(f"True name found for User ID: {user_id} - {user_details['Enkord account full name']}")
+            remove_previous_entry(user_id)  # Remove old entry from the CSV
+            write_to_csv(user_details)  # Write updated details to the CSV
         else:
-            logging.info(f"No change for User ID: {user_id}, still Anonymous.")
-        
-        write_to_csv(user_details)
+            logging.info(f"User ID: {user_id} is still Anonymous. No changes made.")
+
+
+def remove_previous_entry(user_id):
+    """Remove the previous entry of the given user ID from the CSV."""
+    updated_data = []
+
+    try:
+        # Read the existing CSV and filter out the user with the matching ID
+        with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['User ID'] != str(user_id):  # Keep only rows that do not match the user ID
+                    updated_data.append(row)
+
+        # Write the filtered data back to the CSV
+        with open('tt2_players.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(updated_data)
+    except FileNotFoundError:
+        logging.warning("CSV file not found. No previous entries to remove.")
+    except Exception as e:
+        logging.error(f"Error removing previous entry: {e}")
 
 
 def write_to_csv(user_details):
@@ -132,11 +147,5 @@ def write_to_csv(user_details):
 
 
 if __name__ == "__main__":
-    # Step 1: Remove anonymous accounts (case-insensitive) from the CSV and get the list of removed accounts
-    anonymous_accounts = filter_out_anonymous_from_csv()
-
-    # Step 2: Recheck each anonymous account for updates and write the updated info to the CSV
-    if anonymous_accounts:
-        recheck_and_update_anonymous_accounts(anonymous_accounts)
-    else:
-        logging.info("No Anonymous accounts found.")
+    # Recheck anonymous accounts one by one and only update if they are no longer anonymous
+    check_and_update_anonymous_accounts()
