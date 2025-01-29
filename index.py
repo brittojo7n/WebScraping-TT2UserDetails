@@ -110,7 +110,14 @@ def check_and_scrape_missing_user_ids():
         with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                existing_user_ids.add(int(row['User ID']))
+                try:
+                    # Attempt to convert "User ID" to an integer
+                    user_id = int(row['User ID'])
+                    existing_user_ids.add(user_id)
+                except ValueError:
+                    # Log invalid "User ID" and skip the row
+                    logging.warning(f"Invalid User ID found: {row['User ID']}")
+                    continue
 
         missing_user_ids = [
             user_id for user_id in range(start_id, end_id + 1)
