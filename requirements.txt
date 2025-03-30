@@ -1,4 +1,3 @@
 beautifulsoup4==4.12.3
 requests==2.31.0
-urllib3==2.1.0
-concurrent-futures==24.0.0
+urllib3==2.1.0 
