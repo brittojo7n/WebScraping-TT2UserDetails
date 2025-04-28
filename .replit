@@ -1,0 +1,9 @@
+modules = ["python-3.10"]
+run = "python index.py"
+
+[nix]
+channel = "stable-24_05"
+packages = ["glibcLocales"]
+
+[deployment]
+run = ["sh", "-c", "python index.py"]

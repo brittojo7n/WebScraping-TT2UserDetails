@@ -12,6 +12,7 @@ requests = "^2.32.3"
 beautifulsoup4 = "^4.12.3"
 flask = "^3.0.3"
 pandas = "^2.2.2"
+urllib3 = "^2.4.0"
 
 
 [build-system]
