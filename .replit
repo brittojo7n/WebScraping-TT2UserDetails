@@ -3,7 +3,7 @@ run = "python index.py"
 
 [nix]
 channel = "stable-24_05"
-packages = ["glibcLocales"]
+packages = ["glibcLocales", "python-launcher"]
 
 [deployment]
 run = ["sh", "-c", "python index.py"]

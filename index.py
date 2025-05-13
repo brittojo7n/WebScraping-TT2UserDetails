@@ -12,21 +12,17 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def requests_retry_session(
-        retries=5,                       # Increase retries for better resilience
-        backoff_factor=1.5,              # Adaptive backoff for server safety
-        status_forcelist=(500, 502, 503, 504, 429),  # 429 for rate-limiting errors
-        session=None
-):
+def requests_retry_session(retries=5,
+                           backoff_factor=1.5,
+                           status_forcelist=(500, 502, 503, 504, 429),
+                           session=None):
     """Create a retry-enabled session with safe backoff."""
     session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist
-    )
+    retry = Retry(total=retries,
+                  read=retries,
+                  connect=retries,
+                  backoff_factor=backoff_factor,
+                  status_forcelist=status_forcelist)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
     session.mount('https://', adapter)
@@ -36,10 +32,9 @@ def requests_retry_session(
 def scrape_user_details(user_id):
     """Scrape user details for the given user_id."""
     url = f"https://www.enkord.com/account/{user_id}/"
-    
+
     try:
-        # Random delay with adaptive intervals (server-safe)
-        time.sleep(random.uniform(1.0, 3.0))  # Slower and safer
+        time.sleep(random.uniform(1.0, 3.0))
 
         response = requests_retry_session().get(url)
 
@@ -52,7 +47,7 @@ def scrape_user_details(user_id):
             logging.warning(f"User not found: ID {user_id}")
         elif response.status_code == 429:
             logging.warning("Rate limit hit. Sleeping for safety...")
-            time.sleep(5)  # Sleep longer if rate-limited
+            time.sleep(5)
         else:
             response.raise_for_status()
 
@@ -69,7 +64,8 @@ def parse_user_details(html_content, user_id):
 
     user_info = soup.find('div', class_='account-info')
     if user_info:
-        user_details['Enkord account full name'] = user_info.find('b').text.strip()
+        user_details['Enkord account full name'] = user_info.find(
+            'b').text.strip()
 
         registered_span = user_info.find('span', title=True)
         if registered_span:
@@ -84,7 +80,10 @@ def parse_user_details(html_content, user_id):
 
                 for account in accounts_in_games:
                     game_name = account.find('b').text.strip()
-                    accounts_list = [item.text.strip() for item in account.find_all('li')[1:]]
+                    accounts_list = [
+                        item.text.strip()
+                        for item in account.find_all('li')[1:]
+                    ]
                     games_list.append({game_name: accounts_list})
 
                 user_details['Accounts in games'] = games_list
@@ -121,9 +120,9 @@ def check_and_scrape_missing_user_ids():
     while True:
         existing_user_ids = set()
 
-        # Load existing IDs to avoid re-scraping
         try:
-            with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
+            with open('tt2_players.csv', newline='',
+                      encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     try:
@@ -134,7 +133,6 @@ def check_and_scrape_missing_user_ids():
         except FileNotFoundError:
             logging.info("No CSV found, starting fresh.")
 
-        # Identify missing IDs
         missing_user_ids = [
             user_id for user_id in range(start_id, end_id + 1)
             if user_id not in existing_user_ids
@@ -142,11 +140,14 @@ def check_and_scrape_missing_user_ids():
 
         if missing_user_ids:
             iteration += 1
-            logging.info(f"Iteration {iteration}: Scraping {len(missing_user_ids)} IDs")
+            logging.info(
+                f"Iteration {iteration}: Scraping {len(missing_user_ids)} IDs")
 
-            # Use 4 threads for server-safe execution
             with ThreadPoolExecutor(max_workers=4) as executor:
-                futures = {executor.submit(process_user, user_id): user_id for user_id in missing_user_ids}
+                futures = {
+                    executor.submit(process_user, user_id): user_id
+                    for user_id in missing_user_ids
+                }
 
                 for future in as_completed(futures):
                     user_id = futures[future]

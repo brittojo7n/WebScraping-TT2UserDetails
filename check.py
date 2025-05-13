@@ -32,7 +32,6 @@ def requests_retry_session(
 
 
 def scrape_user_details(user_id):
-    """Scrape user details from the webpage."""
     url = f"https://www.enkord.com/account/{user_id}/"
     try:
         response = requests_retry_session().get(url)
@@ -43,14 +42,13 @@ def scrape_user_details(user_id):
         elif response.status_code == 404:
             logging.warning(f"User details not found for ID: {user_id}")
         else:
-            response.raise_for_status()  # Raise exception for other bad responses (4xx or 5xx)
+            response.raise_for_status()  
     except requests.RequestException as e:
         logging.error(f"Error fetching URL {url}: {e}")
     return None
 
 
 def parse_user_details(html_content, user_id):
-    """Parse the scraped HTML to extract user details."""
     user_details = {'User ID': user_id}
     soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -66,10 +64,8 @@ def parse_user_details(html_content, user_id):
 
 
 def check_and_update_anonymous_accounts():
-    """Recheck each anonymous account in the CSV and only update if it's no longer anonymous."""
     accounts_to_check = []
 
-    # Step 1: Read existing CSV and find anonymous accounts (case-insensitive)
     try:
         with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -83,42 +79,37 @@ def check_and_update_anonymous_accounts():
         logging.error(f"Error reading CSV: {e}")
         return
 
-    # Step 2: Process each anonymous account and check if it's still anonymous
     if accounts_to_check:
         with ThreadPoolExecutor(max_workers=4) as executor:
             for account in accounts_to_check:
                 user_id = account['User ID']
                 executor.submit(recheck_and_update_user, user_id)
-                time.sleep(random.uniform(0.2, 0.8))  # Simulate staggered processing
+                time.sleep(random.uniform(0.2, 0.8)) 
     else:
         logging.info("No Anonymous accounts found to check.")
 
 
 def recheck_and_update_user(user_id):
-    """Recheck a user account to see if their true name is available, then update CSV."""
     user_details = scrape_user_details(user_id)
     if user_details:
         if not user_details['Enkord account full name'].lower().startswith("anonymous#"):
             logging.info(f"True name found for User ID: {user_id} - {user_details['Enkord account full name']}")
-            remove_previous_entry(user_id)  # Remove old entry from the CSV
-            write_to_csv(user_details)  # Write updated details to the CSV
+            remove_previous_entry(user_id)
+            write_to_csv(user_details)
         else:
             logging.info(f"User ID: {user_id} is still Anonymous. No changes made.")
 
 
 def remove_previous_entry(user_id):
-    """Remove the previous entry of the given user ID from the CSV."""
     updated_data = []
 
     try:
-        # Read the existing CSV and filter out the user with the matching ID
         with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                if row['User ID'] != str(user_id):  # Keep only rows that do not match the user ID
+                if row['User ID'] != str(user_id):
                     updated_data.append(row)
 
-        # Write the filtered data back to the CSV
         with open('tt2_players.csv', 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = reader.fieldnames
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -131,13 +122,11 @@ def remove_previous_entry(user_id):
 
 
 def write_to_csv(user_details):
-    """Append the new/updated user details to the CSV."""
     try:
         with open('tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
             fieldnames = list(user_details.keys())
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-            # If the file is empty, write the header
             if csvfile.tell() == 0:
                 writer.writeheader()
 
@@ -147,5 +136,4 @@ def write_to_csv(user_details):
 
 
 if __name__ == "__main__":
-    # Recheck anonymous accounts one by one and only update if they are no longer anonymous
     check_and_update_anonymous_accounts()
