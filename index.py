@@ -113,7 +113,7 @@ def process_user(user_id):
 
 def check_and_scrape_missing_user_ids():
     """Check for missing user IDs and scrape them using threading."""
-    start_id = 532000
+    start_id = 0
     end_id = 999999
     iteration = 0
 
