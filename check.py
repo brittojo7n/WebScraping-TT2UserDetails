@@ -67,7 +67,7 @@ def check_and_update_anonymous_accounts():
     accounts_to_check = []
 
     try:
-        with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
+        with open('./dataset/tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row['Enkord account full name'].lower().startswith("anonymous#"):
@@ -104,13 +104,13 @@ def remove_previous_entry(user_id):
     updated_data = []
 
     try:
-        with open('tt2_players.csv', newline='', encoding='utf-8') as csvfile:
+        with open('./dataset/tt2_players.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row['User ID'] != str(user_id):
                     updated_data.append(row)
 
-        with open('tt2_players.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        with open('./dataset/tt2_players.csv', 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = reader.fieldnames
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -123,7 +123,7 @@ def remove_previous_entry(user_id):
 
 def write_to_csv(user_details):
     try:
-        with open('tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        with open('./dataset/tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
             fieldnames = list(user_details.keys())
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 

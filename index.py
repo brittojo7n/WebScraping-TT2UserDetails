@@ -93,7 +93,7 @@ def parse_user_details(html_content, user_id):
 
 def write_to_csv(user_details):
     """Write user details to the CSV file."""
-    with open('tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
+    with open('./dataset/tt2_players.csv', 'a', newline='', encoding='utf-8') as csvfile:
         fieldnames = list(user_details.keys())
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -121,7 +121,7 @@ def check_and_scrape_missing_user_ids():
         existing_user_ids = set()
 
         try:
-            with open('tt2_players.csv', newline='',
+            with open('./dataset/tt2_players.csv', newline='',
                       encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
