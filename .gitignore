@@ -1,5 +1,6 @@
-# Ignore Python environment folder
-myenv/
 .env/
 venv/
 .venv/
+poetry.lock
+pyproject.toml
+.replit
