@@ -186,7 +186,7 @@ def run_missing_ids_scraper(filename):
         logging.info("✅ No missing user IDs found in the range.")
         return
 
-    logging.info(f"Found {len(missing_user_ids)} missing IDs to scrape.")
+    logging.info(f"Found {len(missing_user_ids)} IDs from {start_id} to {end_id}.")
     with ThreadPoolExecutor(max_workers=6) as executor:
         futures = {executor.submit(process_new_user, uid, filename): uid for uid in missing_user_ids}
         for future in as_completed(futures):
@@ -257,7 +257,7 @@ def run_anonymous_checker(filename):
 # --- MAIN EXECUTION ---
 def main_menu(filename):
     while True:
-        choice = input("\n[1] Scrape Missing IDs | [2] Re-check Anonymous | [3] Exit > ").strip()
+        choice = input("\n[1] Scrape Missing IDs \n[2] Re-check Anonymous \n[3] Exit \n> ").strip()
 
         if choice == '1':
             run_missing_ids_scraper(filename)
@@ -276,7 +276,7 @@ def main_menu(filename):
 if __name__ == "__main__":
     input_filename = './dataset/tt2_players.csv'
     try:
-        logging.info("--- Initializing: Cleaning, sorting, and de-duplicating existing CSV... ---")
+        logging.info("Initializing: Cleaning, sorting, and de-duplicating existing CSV.")
         sort_and_clean_csv(input_filename)
         main_menu(input_filename)
     except KeyboardInterrupt:
