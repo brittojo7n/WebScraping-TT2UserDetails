@@ -57,7 +57,7 @@ def overwrite_sorted_csv(header, sorted_data, invalid_rows, filename):
         writer.writerows(invalid_rows)
 
     logging.info(
-        f"Sorted data with invalid rows at the bottom updated in {filename}.")
+        f"✅ Sorted data with invalid rows at the bottom updated in {filename}.")
 
 
 input_filename = './dataset/tt2_players.csv'
@@ -66,8 +66,5 @@ header, sorted_data, invalid_rows = sort_csv(input_filename)
 
 if header and sorted_data:
     overwrite_sorted_csv(header, sorted_data, invalid_rows, input_filename)
-    print(
-        f"Data sorted with invalid User IDs fixed and remaining invalid rows moved to the bottom in {input_filename}"
-    )
 else:
-    print("Sorting failed or file was empty. Nothing was written.")
+    print("❌ Sorting failed or file was empty. Nothing was written.")

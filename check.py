@@ -40,11 +40,11 @@ def scrape_user_details(user_id):
             user_details = parse_user_details(html_content, user_id)
             return user_details
         elif response.status_code == 404:
-            logging.warning(f"User details not found for ID: {user_id}")
+            logging.warning(f"❌ User not found for ID: {user_id}")
         else:
             response.raise_for_status()  
     except requests.RequestException as e:
-        logging.error(f"Error fetching URL {url}: {e}")
+        logging.error(f"⚠ Error fetching URL {url}: {e}")
     return None
 
 
@@ -80,7 +80,7 @@ def check_and_update_anonymous_accounts():
         return
 
     if accounts_to_check:
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=6) as executor:
             for account in accounts_to_check:
                 user_id = account['User ID']
                 executor.submit(recheck_and_update_user, user_id)
@@ -93,11 +93,11 @@ def recheck_and_update_user(user_id):
     user_details = scrape_user_details(user_id)
     if user_details:
         if not user_details['Enkord account full name'].lower().startswith("anonymous#"):
-            logging.info(f"True name found for User ID: {user_id} - {user_details['Enkord account full name']}")
+            logging.info(f"✅ True name found for User ID: {user_id} - {user_details['Enkord account full name']}")
             remove_previous_entry(user_id)
             write_to_csv(user_details)
         else:
-            logging.info(f"User ID: {user_id} is still Anonymous. No changes made.")
+            logging.info(f"☑ User ID: {user_id} is still Anonymous. No changes made.")
 
 
 def remove_previous_entry(user_id):

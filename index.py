@@ -44,15 +44,15 @@ def scrape_user_details(user_id):
             return user_details
 
         elif response.status_code == 404:
-            logging.warning(f"User not found: ID {user_id}")
+            logging.warning(f"❌ User not found: ID {user_id}")
         elif response.status_code == 429:
-            logging.warning("Rate limit hit. Sleeping for safety...")
+            logging.warning("🛑 Rate limit hit. Sleeping for safety...")
             time.sleep(5)
         else:
             response.raise_for_status()
 
     except requests.RequestException as e:
-        logging.error(f"Error fetching {url}: {e}")
+        logging.error(f"⚠ Error fetching {url}: {e}")
 
     return None
 
@@ -145,7 +145,7 @@ def check_and_scrape_missing_user_ids():
             logging.info(
                 f"Iteration {iteration}: Scraping {len(missing_user_ids)} IDs")
 
-            with ThreadPoolExecutor(max_workers=4) as executor:
+            with ThreadPoolExecutor(max_workers=6) as executor:
                 futures = {
                     executor.submit(process_user, user_id): user_id
                     for user_id in missing_user_ids
