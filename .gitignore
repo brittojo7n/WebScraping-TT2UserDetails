@@ -1,7 +1,10 @@
-.env/
 .env
-venv/
 .venv/
-poetry.lock
-pyproject.toml
+venv/
+.env/
+env/
+__pycache__/
+*.pyc
 .replit
+.vscode/
+.idea/
