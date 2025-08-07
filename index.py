@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- CORE UTILITIES ---
-
 def clean_user_id(user_id):
     if not isinstance(user_id, str):
         return None
@@ -39,12 +38,7 @@ def requests_retry_session(retries=5,
     return session
 
 # --- SORTING AND FILE I/O ---
-
 def sort_and_clean_csv(filename):
-    """
-    Reads the CSV, removes duplicate rows based on User ID, cleans data,
-    and sorts the results before writing back to the file.
-    """
     try:
         with open(filename, 'r', encoding='utf-8', errors='replace') as file:
             content = file.read().replace('\0', '')
@@ -66,7 +60,7 @@ def sort_and_clean_csv(filename):
         return
 
     sorted_data, invalid_rows = [], []
-    seen_ids = set() # Use a set to track processed User IDs for uniqueness
+    seen_ids = set()
     duplicates_found = 0
 
     for row in reader:
@@ -76,7 +70,6 @@ def sort_and_clean_csv(filename):
         cleaned_id = clean_user_id(row[0])
         
         if cleaned_id:
-            # Check if this ID is a duplicate
             if cleaned_id not in seen_ids:
                 row[0] = cleaned_id
                 sorted_data.append(row)
@@ -89,7 +82,6 @@ def sort_and_clean_csv(filename):
     if duplicates_found > 0:
         logging.info(f"ℹ️  Found and removed {duplicates_found} duplicate user entries.")
 
-    # Sort the unique data by the integer value of the User ID
     sorted_data.sort(key=lambda r: int(r[0]))
     
     try:
@@ -98,14 +90,12 @@ def sort_and_clean_csv(filename):
             writer.writerow(header)
             writer.writerows(sorted_data)
             if invalid_rows:
-                writer.writerows(invalid_rows) # Keep invalid rows at the end if needed
+                writer.writerows(invalid_rows)
         logging.info("✅ CSV cleaned, de-duplicated, and sorted successfully.")
     except IOError as e:
         logging.error(f"❌ Failed to write sorted data to '{filename}': {e}")
 
-
 # --- SCRAPING AND PARSING ---
-
 def scrape_user_details(user_id):
     url = f"https://www.enkord.com/account/{user_id}/"
     try:
@@ -151,7 +141,6 @@ def parse_user_details(html_content, user_id):
     return {'User ID': user_id, 'Enkord account full name': name, 'Registered': registered, 'Accounts in games': accounts}
 
 # --- MODULE 1: SCRAPE MISSING IDs ---
-
 def write_to_csv(user_details, filename):
     try:
         file_exists = False
@@ -207,7 +196,6 @@ def run_missing_ids_scraper(filename):
                 logging.error(f"❌ Worker thread failed for ID {futures[future]}: {e}")
 
 # --- MODULE 2: RE-CHECK ANONYMOUS ACCOUNTS ---
-
 def recheck_anonymous_user(user_id):
     user_details = scrape_user_details(user_id)
     if user_details and not user_details.get('Enkord account full name', '').lower().startswith("anonymous#"):
@@ -267,11 +255,9 @@ def run_anonymous_checker(filename):
         logging.error(f"❌ Failed to write updates to CSV: {e}")
 
 # --- MAIN EXECUTION ---
-
 def main_menu(filename):
     while True:
-        print("\n--- Main Menu ---\n1. Scrape for missing user IDs\n2. Check for updated 'Anonymous' names\n3. Exit")
-        choice = input("Enter your choice (1-3): ").strip()
+        choice = input("\n[1] Scrape Missing IDs | [2] Re-check Anonymous | [3] Exit > ").strip()
 
         if choice == '1':
             run_missing_ids_scraper(filename)
@@ -284,7 +270,7 @@ def main_menu(filename):
         elif choice == '3':
             break
         else:
-            print("⚠️  Invalid choice. Please enter 1, 2, or 3.")
+            logging.warning("⚠️  Invalid choice. Please enter 1, 2, or 3.")
     logging.info("✅ Exiting program.")
 
 if __name__ == "__main__":
