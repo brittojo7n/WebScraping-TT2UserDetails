@@ -134,8 +134,7 @@ def parse_user_details(html_content, user_id):
         return {
             'User ID': user_id,
             'Enkord account full name': 'N/A',
-            'Registered': 'N/A',
-            'Accounts in games': 'N/A'
+            'Registered': 'N/A'
         }
 
     name_tag = user_info.find('b')
@@ -144,18 +143,10 @@ def parse_user_details(html_content, user_id):
     registered_span = user_info.find('span', title=True)
     registered = registered_span['title'] if registered_span else "N/A"
 
-    accounts_div = user_info.find('div', class_='text-box')
-    accounts = "N/A"
-    if accounts_div:
-        accounts_list = [li.text.strip() for li in accounts_div.find_all('li')]
-        if accounts_list:
-            accounts = ", ".join(accounts_list)
-
     return {
         'User ID': user_id,
         'Enkord account full name': name,
-        'Registered': registered,
-        'Accounts in games': accounts
+        'Registered': registered
     }
 
 
@@ -171,8 +162,7 @@ def write_to_csv(user_details, filename):
 
         with open(filename, 'a', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'User ID', 'Enkord account full name', 'Registered',
-                'Accounts in games'
+                'User ID', 'Enkord account full name', 'Registered'
             ]
             writer = csv.DictWriter(csvfile,
                                     fieldnames=fieldnames,
@@ -192,7 +182,7 @@ def process_new_user(user_id, filename):
 
 
 def run_missing_ids_scraper(filename):
-    start_id, end_id = 180000, 999999
+    start_id, end_id = 333333, 999999
     existing_user_ids = set()
     try:
         with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
