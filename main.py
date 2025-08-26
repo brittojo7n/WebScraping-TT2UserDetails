@@ -9,7 +9,22 @@ from urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 from io import StringIO
-import sys 
+import sys
+import os
+
+# Enable ANSI colors on Windows
+if os.name == 'nt':
+    os.system('')
+
+
+# --- COLOR CODES ---
+class Colors:
+    GREEN = '\033[92m'  # Success
+    YELLOW = '\033[93m' # Warning
+    RED = '\033[91m'    # Error
+    CYAN = '\033[96m'   # Info
+    RESET = '\033[0m'   # Reset to default color
+
 
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO,
@@ -47,14 +62,15 @@ def sort_and_clean_csv(filename):
             content = file.read().replace('\0', '')
     except FileNotFoundError:
         logging.warning(
-            f"⚠️  File '{filename}' not found. Will be created upon scraping.")
+            f"{Colors.YELLOW}[WARN]{Colors.RESET} File '{filename}' not found. Will be created upon scraping."
+        )
         return
     except PermissionError:
-        logging.error(f"❌ Permission denied to read '{filename}'.")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Permission denied to read '{filename}'.")
         return
 
     if not content.strip():
-        logging.warning("⚠️  File is empty, nothing to sort.")
+        logging.warning(f"{Colors.YELLOW}[WARN]{Colors.RESET} File is empty, nothing to sort.")
         return
 
     reader = csv.reader(StringIO(content))
@@ -85,7 +101,7 @@ def sort_and_clean_csv(filename):
 
     if duplicates_found > 0:
         logging.info(
-            f"ℹ️  Found and removed {duplicates_found} duplicate user entries."
+            f"{Colors.CYAN}[INFO]{Colors.RESET} Found and removed {duplicates_found} duplicate user entries."
         )
 
     sorted_data.sort(key=lambda r: int(r[0]))
@@ -97,9 +113,9 @@ def sort_and_clean_csv(filename):
             writer.writerows(sorted_data)
             if invalid_rows:
                 writer.writerows(invalid_rows)
-        logging.info("✅ CSV cleaned, de-duplicated, and sorted successfully.")
+        logging.info(f"{Colors.GREEN}[SUCCESS]{Colors.RESET} CSV cleaned, de-duplicated, and sorted successfully.")
     except IOError as e:
-        logging.error(f"❌ Failed to write sorted data to '{filename}': {e}")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write sorted data to '{filename}': {e}")
 
 
 # --- SCRAPING AND PARSING ---
@@ -111,7 +127,7 @@ def scrape_user_details(user_id):
         response = session.get(url, timeout=20)
 
         if response.status_code == 429:
-            logging.warning(f"🛑 Rate limit hit for ID {user_id}. Retrying...")
+            logging.warning(f"{Colors.YELLOW}[RATE LIMIT]{Colors.RESET} Hit for ID {user_id}. Retrying...")
             return None
 
         response.raise_for_status()
@@ -119,11 +135,11 @@ def scrape_user_details(user_id):
 
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            logging.warning(f"❌ User not found: ID {user_id}")
+            logging.warning(f"{Colors.YELLOW}[NOT FOUND]{Colors.RESET} User ID {user_id}")
         else:
-            logging.error(f"❌ HTTP Error for ID {user_id}: {e}")
+            logging.error(f"{Colors.RED}[HTTP ERROR]{Colors.RESET} for ID {user_id}: {e}")
     except requests.exceptions.RequestException as e:
-        logging.error(f"❌ Network error for ID {user_id}: {e}")
+        logging.error(f"{Colors.RED}[NETWORK ERROR]{Colors.RESET} for ID {user_id}: {e}")
     return None
 
 
@@ -171,13 +187,13 @@ def write_to_csv(user_details, filename):
                 writer.writeheader()
             writer.writerow(user_details)
     except IOError as e:
-        logging.error(f"❌ Could not write to '{filename}': {e}")
+        logging.error(f"{Colors.RED}[IO ERROR]{Colors.RESET} Could not write to '{filename}': {e}")
 
 
 def process_new_user(user_id, filename):
     user_details = scrape_user_details(user_id)
     if user_details:
-        logging.info(f"✅ Fetched new user: ID {user_id}")
+        logging.info(f"{Colors.GREEN}[FETCHED]{Colors.RESET} New user: ID {user_id}")
         write_to_csv(user_details, filename)
 
 
@@ -194,7 +210,7 @@ def run_missing_ids_scraper(filename):
     except FileNotFoundError:
         pass
     except Exception as e:
-        logging.error(f"❌ Error reading existing IDs from '{filename}': {e}")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Error reading existing IDs from '{filename}': {e}")
         return
 
     missing_user_ids = [
@@ -202,7 +218,7 @@ def run_missing_ids_scraper(filename):
         if uid not in existing_user_ids
     ]
     if not missing_user_ids:
-        logging.info("✅ No missing user IDs found in the range.")
+        logging.info(f"{Colors.GREEN}[COMPLETE]{Colors.RESET} No missing user IDs found in the range.")
         return
 
     logging.info(
@@ -217,7 +233,7 @@ def run_missing_ids_scraper(filename):
                 future.result()
             except Exception as e:
                 logging.error(
-                    f"❌ Worker thread failed for ID {futures[future]}: {e}")
+                    f"{Colors.RED}[THREAD ERROR]{Colors.RESET} Worker thread failed for ID {futures[future]}: {e}")
 
 
 # --- MODULE 2: RE-CHECK ANONYMOUS ACCOUNTS ---
@@ -226,11 +242,11 @@ def recheck_anonymous_user(user_id):
     if user_details and not user_details.get(
             'Enkord account full name', '').lower().startswith("anonymous#"):
         logging.info(
-            f"✅ Name updated for ID {user_id}: {user_details['Enkord account full name']}"
+            f"{Colors.GREEN}[UPDATED]{Colors.RESET} Name for ID {user_id}: {user_details['Enkord account full name']}"
         )
         return user_details
     elif user_details:
-        logging.info(f"☑️  User ID: {user_id} is still Anonymous.")
+        logging.info(f"{Colors.CYAN}[INFO]{Colors.RESET} User ID: {user_id} is still Anonymous.")
     return None
 
 
@@ -240,15 +256,15 @@ def run_anonymous_checker(filename):
             all_data = list(csv.DictReader(file))
             if not all_data:
                 logging.warning(
-                    "⚠️  CSV file is empty. Cannot check for anonymous accounts."
+                    f"{Colors.YELLOW}[WARN]{Colors.RESET} CSV file is empty. Cannot check for anonymous accounts."
                 )
                 return
             fieldnames = all_data[0].keys()
     except FileNotFoundError:
-        logging.error(f"❌ Cannot check: File '{filename}' not found.")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Cannot check: File '{filename}' not found.")
         return
     except (IndexError, KeyError):
-        logging.error(f"❌ CSV file '{filename}' seems malformed or empty.")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} CSV file '{filename}' seems malformed or empty.")
         return
 
     accounts_to_check = [
@@ -256,7 +272,7 @@ def run_anonymous_checker(filename):
             'Enkord account full name', '')).lower().startswith("anonymous#")
     ]
     if not accounts_to_check:
-        logging.info("✅ No 'Anonymous' accounts found to check.")
+        logging.info(f"{Colors.GREEN}[INFO]{Colors.RESET} No 'Anonymous' accounts found to check.")
         return
 
     logging.info(
@@ -276,12 +292,12 @@ def run_anonymous_checker(filename):
                     updated_details[result['User ID']] = result
             except Exception as e:
                 logging.error(
-                    f"❌ Worker thread failed during anonymous check for ID {future_to_id[future]}: {e}"
+                    f"{Colors.RED}[THREAD ERROR]{Colors.RESET} Worker thread failed during anonymous check for ID {future_to_id[future]}: {e}"
                 )
 
     if not updated_details:
-        logging.info(
-            "⚠️  No 'Anonymous' accounts were updated after re-checking.")
+        logging.warning(
+            f"{Colors.YELLOW}[NO UPDATES]{Colors.RESET} No 'Anonymous' accounts were updated after re-checking.")
         return
 
     logging.info(
@@ -295,9 +311,9 @@ def run_anonymous_checker(filename):
                                     extrasaction='ignore')
             writer.writeheader()
             writer.writerows(final_data)
-        logging.info("✅ CSV file updated with new names.")
+        logging.info(f"{Colors.GREEN}[SUCCESS]{Colors.RESET} CSV file updated with new names.")
     except IOError as e:
-        logging.error(f"❌ Failed to write updates to CSV: {e}")
+        logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write updates to CSV: {e}")
 
 
 # --- MAIN EXECUTION ---
@@ -310,26 +326,26 @@ def main_menu(filename):
         if choice == '1':
             run_missing_ids_scraper(filename)
             logging.info(
-                "✅ Scraping complete. Re-sorting and de-duplicating file...")
+                f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Scraping complete. Re-sorting and de-duplicating file...")
             sort_and_clean_csv(filename)
         elif choice == '2':
             run_anonymous_checker(filename)
             logging.info(
-                "✅ Anonymous check complete. Re-sorting and de-duplicating file..."
+                f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Anonymous check complete. Re-sorting and de-duplicating file..."
             )
             sort_and_clean_csv(filename)
         elif choice == '3':
             break
         else:
-            logging.warning("⚠️  Invalid choice. Please enter 1, 2, or 3.")
-    logging.info("✅ Exiting program.")
+            logging.warning(f"{Colors.YELLOW}[INVALID INPUT]{Colors.RESET} Please enter 1, 2, or 3.")
+    logging.info(f"{Colors.GREEN}[EXIT]{Colors.RESET} Exiting program.")
 
 
 if __name__ == "__main__":
     input_filename = './dataset/tt2_players.csv'
     try:
         logging.info(
-            "Initializing: Cleaning, sorting, and de-duplicating existing CSV."
+            f"{Colors.CYAN}[INIT]{Colors.RESET} Initializing: Cleaning, sorting, and de-duplicating existing CSV."
         )
         sort_and_clean_csv(input_filename)
         main_menu(input_filename)
@@ -337,5 +353,5 @@ if __name__ == "__main__":
         print("\nProgram interrupted by user. Exiting gracefully.")
         sys.exit(0)
     except Exception as e:
-        logging.critical(f"❌ A critical unexpected error occurred: {e}")
+        logging.critical(f"{Colors.RED}[CRITICAL]{Colors.RESET} A critical unexpected error occurred: {e}")
         sys.exit(1)
