@@ -9,7 +9,7 @@ from urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 from io import StringIO
-import sys
+import sys 
 
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO,
@@ -182,7 +182,7 @@ def process_new_user(user_id, filename):
 
 
 def run_missing_ids_scraper(filename):
-    start_id, end_id = 333333, 999999
+    start_id, end_id = 533000, 999999
     existing_user_ids = set()
     try:
         with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
