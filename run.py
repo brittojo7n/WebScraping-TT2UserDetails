@@ -13,10 +13,8 @@ import sys
 import os
 import argparse
 
-# Enable ANSI colors on Windows
 if os.name == 'nt':
     os.system('')
-
 
 # --- COLOR CODES ---
 class Colors:
@@ -26,11 +24,9 @@ class Colors:
     CYAN = '\033[96m'   # Info
     RESET = '\033[0m'   # Reset to default color
 
-
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 # --- CORE UTILITIES ---
 def clean_user_id(user_id):
@@ -38,7 +34,6 @@ def clean_user_id(user_id):
         return None
     cleaned_id = re.sub(r'\D*(\d+)', r'\1', user_id)
     return cleaned_id if cleaned_id.isdigit() else None
-
 
 def requests_retry_session(retries=5,
                            backoff_factor=1.5,
@@ -54,7 +49,6 @@ def requests_retry_session(retries=5,
     session.mount('http://', adapter)
     session.mount('https://', adapter)
     return session
-
 
 # --- SORTING AND FILE I/O ---
 def sort_and_clean_csv(filename):
@@ -118,7 +112,6 @@ def sort_and_clean_csv(filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write sorted data to '{filename}': {e}")
 
-
 # --- SCRAPING AND PARSING ---
 def scrape_user_details(user_id):
     url = f"https://www.enkord.com/account/{user_id}/"
@@ -143,7 +136,6 @@ def scrape_user_details(user_id):
         logging.error(f"{Colors.RED}[NETWORK ERROR]{Colors.RESET} for ID {user_id}: {e}")
     return None
 
-
 def parse_user_details(html_content, user_id):
     soup = BeautifulSoup(html_content, 'html.parser')
     user_info = soup.find('div', class_='account-info')
@@ -165,7 +157,6 @@ def parse_user_details(html_content, user_id):
         'Enkord account full name': name,
         'Registered': registered
     }
-
 
 # --- MODULE 1: SCRAPE MISSING IDs ---
 def write_to_csv(user_details, filename):
@@ -190,13 +181,11 @@ def write_to_csv(user_details, filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[IO ERROR]{Colors.RESET} Could not write to '{filename}': {e}")
 
-
 def process_new_user(user_id, filename):
     user_details = scrape_user_details(user_id)
     if user_details:
         logging.info(f"{Colors.GREEN}[FETCHED]{Colors.RESET} New user: ID {user_id}")
         write_to_csv(user_details, filename)
-
 
 def run_missing_ids_scraper(filename):
     start_id, end_id = 534000, 536000
@@ -236,7 +225,6 @@ def run_missing_ids_scraper(filename):
                 logging.error(
                     f"{Colors.RED}[THREAD ERROR]{Colors.RESET} Worker thread failed for ID {futures[future]}: {e}")
 
-
 # --- MODULE 2: RE-CHECK ANONYMOUS ACCOUNTS ---
 def recheck_anonymous_user(user_id):
     user_details = scrape_user_details(user_id)
@@ -249,7 +237,6 @@ def recheck_anonymous_user(user_id):
     elif user_details:
         logging.info(f"{Colors.CYAN}[INFO]{Colors.RESET} User ID: {user_id} is still Anonymous.")
     return None
-
 
 def run_anonymous_checker(filename):
     try:
@@ -315,7 +302,6 @@ def run_anonymous_checker(filename):
         logging.info(f"{Colors.GREEN}[SUCCESS]{Colors.RESET} CSV file updated with new names.")
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write updates to CSV: {e}")
-
 
 # --- MAIN EXECUTION ---
 if __name__ == "__main__":
