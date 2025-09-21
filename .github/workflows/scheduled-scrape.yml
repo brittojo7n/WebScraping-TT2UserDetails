@@ -3,9 +3,7 @@ name: Scheduled Scrape and Update
 on:
   schedule:
     # Runs at 12:00 UTC every day.
-    # To change the schedule, update the cron expression.
-    - cron: '0 12 * * *'
-  # Allows you to manually trigger the workflow from the Actions tab.
+    - cron: '30 6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -24,10 +22,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-        # Dependencies from your requirements.txt file are:
-        # beautifulsoup4
-        # requests
-        # urllib3
 
       - name: Create dataset directory
         run: mkdir -p dataset
@@ -40,3 +34,9 @@ jobs:
           
       - name: Run the script to scrape missing IDs
         run: python run.py --mode missing
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automated: Update tt2_players.csv with new data"
+          file_pattern: "dataset/tt2_players.csv"
