@@ -39,4 +39,4 @@ jobs:
           fi
           
       - name: Run the script to scrape missing IDs
-        run: python main.py --mode missing
+        run: python run.py --mode missing
