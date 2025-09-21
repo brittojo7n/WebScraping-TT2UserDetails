@@ -1,15 +1,19 @@
-name: Scheduled Run
+name: Automated Run
 
 on:
-  schedule:
-    - cron: '30 18 * * *'
   workflow_dispatch:
-
+  schedule:
+    - cron: '*/5 * * * *'
+  
 jobs:
-  run-script:
+  run-and-recur:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write 
+
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.workflow_run.conclusion == 'success')
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -44,3 +48,12 @@ jobs:
         with:
           commit_message: "Automated: Update tt2_players.csv with new data"
           file_pattern: "dataset/tt2_players.csv"
+      
+      - name: Trigger next run after 5 minutes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Starting a 5-minute timer before triggering the next run..."
+          sleep 300  # Wait for 300 seconds (5 minutes)
+          echo "Triggering the next workflow run..."
+          gh workflow run run.yml --ref ${{ github.ref }}
