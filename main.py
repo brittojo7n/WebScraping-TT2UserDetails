@@ -13,6 +13,8 @@ import sys
 import os
 import argparse
 
+start_id, end_id = 534000, 540000
+
 if os.name == 'nt':
     os.system('')
 
@@ -188,7 +190,6 @@ def process_new_user(user_id, filename):
         write_to_csv(user_details, filename)
 
 def run_missing_ids_scraper(filename):
-    start_id, end_id = 534000, 536000
     existing_user_ids = set()
     try:
         with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
