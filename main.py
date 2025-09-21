@@ -11,11 +11,10 @@ import re
 from io import StringIO
 import sys
 import os
+import argparse
 
-# Enable ANSI colors on Windows
 if os.name == 'nt':
     os.system('')
-
 
 # --- COLOR CODES ---
 class Colors:
@@ -25,11 +24,9 @@ class Colors:
     CYAN = '\033[96m'   # Info
     RESET = '\033[0m'   # Reset to default color
 
-
 # --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 # --- CORE UTILITIES ---
 def clean_user_id(user_id):
@@ -37,7 +34,6 @@ def clean_user_id(user_id):
         return None
     cleaned_id = re.sub(r'\D*(\d+)', r'\1', user_id)
     return cleaned_id if cleaned_id.isdigit() else None
-
 
 def requests_retry_session(retries=5,
                            backoff_factor=1.5,
@@ -53,7 +49,6 @@ def requests_retry_session(retries=5,
     session.mount('http://', adapter)
     session.mount('https://', adapter)
     return session
-
 
 # --- SORTING AND FILE I/O ---
 def sort_and_clean_csv(filename):
@@ -117,7 +112,6 @@ def sort_and_clean_csv(filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write sorted data to '{filename}': {e}")
 
-
 # --- SCRAPING AND PARSING ---
 def scrape_user_details(user_id):
     url = f"https://www.enkord.com/account/{user_id}/"
@@ -142,7 +136,6 @@ def scrape_user_details(user_id):
         logging.error(f"{Colors.RED}[NETWORK ERROR]{Colors.RESET} for ID {user_id}: {e}")
     return None
 
-
 def parse_user_details(html_content, user_id):
     soup = BeautifulSoup(html_content, 'html.parser')
     user_info = soup.find('div', class_='account-info')
@@ -164,7 +157,6 @@ def parse_user_details(html_content, user_id):
         'Enkord account full name': name,
         'Registered': registered
     }
-
 
 # --- MODULE 1: SCRAPE MISSING IDs ---
 def write_to_csv(user_details, filename):
@@ -189,16 +181,14 @@ def write_to_csv(user_details, filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[IO ERROR]{Colors.RESET} Could not write to '{filename}': {e}")
 
-
 def process_new_user(user_id, filename):
     user_details = scrape_user_details(user_id)
     if user_details:
         logging.info(f"{Colors.GREEN}[FETCHED]{Colors.RESET} New user: ID {user_id}")
         write_to_csv(user_details, filename)
 
-
 def run_missing_ids_scraper(filename):
-    start_id, end_id = 533000, 999999
+    start_id, end_id = 534000, 536000
     existing_user_ids = set()
     try:
         with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
@@ -235,7 +225,6 @@ def run_missing_ids_scraper(filename):
                 logging.error(
                     f"{Colors.RED}[THREAD ERROR]{Colors.RESET} Worker thread failed for ID {futures[future]}: {e}")
 
-
 # --- MODULE 2: RE-CHECK ANONYMOUS ACCOUNTS ---
 def recheck_anonymous_user(user_id):
     user_details = scrape_user_details(user_id)
@@ -248,7 +237,6 @@ def recheck_anonymous_user(user_id):
     elif user_details:
         logging.info(f"{Colors.CYAN}[INFO]{Colors.RESET} User ID: {user_id} is still Anonymous.")
     return None
-
 
 def run_anonymous_checker(filename):
     try:
@@ -315,40 +303,30 @@ def run_anonymous_checker(filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write updates to CSV: {e}")
 
-
 # --- MAIN EXECUTION ---
-def main_menu(filename):
-    while True:
-        choice = input(
-            "\n[1] Scrape Missing IDs \n[2] Re-check Anonymous \n[3] Exit \n> "
-        ).strip()
-
-        if choice == '1':
-            run_missing_ids_scraper(filename)
-            logging.info(
-                f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Scraping complete. Re-sorting and de-duplicating file...")
-            sort_and_clean_csv(filename)
-        elif choice == '2':
-            run_anonymous_checker(filename)
-            logging.info(
-                f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Anonymous check complete. Re-sorting and de-duplicating file..."
-            )
-            sort_and_clean_csv(filename)
-        elif choice == '3':
-            break
-        else:
-            logging.warning(f"{Colors.YELLOW}[INVALID INPUT]{Colors.RESET} Please enter 1, 2, or 3.")
-    logging.info(f"{Colors.GREEN}[EXIT]{Colors.RESET} Exiting program.")
-
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the web scraping script.")
+    parser.add_argument('--mode',
+                        choices=['missing', 'anonymous'],
+                        required=True,
+                        help="Choose 'missing' to scrape new IDs or 'anonymous' to re-check anonymous accounts.")
+    args = parser.parse_args()
+
     input_filename = './dataset/tt2_players.csv'
     try:
         logging.info(
             f"{Colors.CYAN}[INIT]{Colors.RESET} Initializing: Cleaning, sorting, and de-duplicating existing CSV."
         )
         sort_and_clean_csv(input_filename)
-        main_menu(input_filename)
+        
+        if args.mode == 'missing':
+            run_missing_ids_scraper(input_filename)
+        elif args.mode == 'anonymous':
+            run_anonymous_checker(input_filename)
+
+        logging.info(f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Process finished. Final cleaning and sorting...")
+        sort_and_clean_csv(input_filename)
+
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting gracefully.")
         sys.exit(0)
