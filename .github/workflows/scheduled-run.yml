@@ -1,4 +1,4 @@
-name: Scheduled Scrape and Update
+name: Scheduled Run
 
 on:
   schedule:
@@ -33,8 +33,11 @@ jobs:
             echo 'User ID,Enkord account full name,Registered' > dataset/tt2_players.csv
           fi
           
-      - name: Run the script to scrape missing IDs
-        run: python run.py --mode missing
+      - name: Scraping Missing IDs
+        run: python main.py --mode missing
+
+      - name: Scraping Anonymous IDs
+        run: python main.py --mode anonymous
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v4
