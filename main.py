@@ -18,15 +18,13 @@ start_id, end_id = 534000, 540000
 if os.name == 'nt':
     os.system('')
 
-# --- COLOR CODES ---
 class Colors:
-    GREEN = '\033[92m'  # Success
-    YELLOW = '\033[93m' # Warning
-    RED = '\033[91m'    # Error
-    CYAN = '\033[96m'   # Info
-    RESET = '\033[0m'   # Reset to default color
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    CYAN = '\033[96m'
+    RESET = '\033[0m'
 
-# --- CONFIGURATION ---
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -308,9 +306,9 @@ def run_anonymous_checker(filename):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the web scraping script.")
     parser.add_argument('--mode',
-                        choices=['missing', 'anonymous'],
+                        choices=['missing', 'anonymous', 'all'],
                         required=True,
-                        help="Choose 'missing' to scrape new IDs or 'anonymous' to re-check anonymous accounts.")
+                        help="Choose 'missing' to scrape new IDs, 'anonymous' to re-check anonymous accounts, or 'all' to do both.")
     args = parser.parse_args()
 
     input_filename = './dataset/tt2_players.csv'
@@ -323,6 +321,9 @@ if __name__ == "__main__":
         if args.mode == 'missing':
             run_missing_ids_scraper(input_filename)
         elif args.mode == 'anonymous':
+            run_anonymous_checker(input_filename)
+        elif args.mode == 'all':
+            run_missing_ids_scraper(input_filename)
             run_anonymous_checker(input_filename)
 
         logging.info(f"{Colors.GREEN}[COMPLETE]{Colors.RESET} Process finished. Final cleaning and sorting...")
