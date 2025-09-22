@@ -1,27 +1,32 @@
-name: Automated Run
+name: Automated Hourly Run
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
   schedule:
-    - cron: '*/5 * * * *'
-  
+    - cron: '0 */2 * * *' # This runs at the start of every 2nd hour
+
 jobs:
-  run-and-recur:
+  run-scraper:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write 
-
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.workflow_run.conclusion == 'success')
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -36,24 +41,12 @@ jobs:
           if [ ! -f "dataset/tt2_players.csv" ]; then
             echo 'User ID,Enkord account full name,Registered' > dataset/tt2_players.csv
           fi
-          
-      - name: Scraping Missing IDs
-        run: python main.py --mode missing
 
-      - name: Scraping Anonymous IDs
-        run: python main.py --mode anonymous
+      - name: Scrape Missing and Anonymous IDs
+        run: python main.py --mode all
 
       - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automated: Update tt2_players.csv with new data"
+          commit_message: "Automated: Hourly update of tt2_players.csv"
           file_pattern: "dataset/tt2_players.csv"
-      
-      - name: Trigger next run after 5 minutes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Starting a 5-minute timer before triggering the next run..."
-          sleep 300  # Wait for 300 seconds (5 minutes)
-          echo "Triggering the next workflow run..."
-          gh workflow run run.yml --ref ${{ github.ref }}
