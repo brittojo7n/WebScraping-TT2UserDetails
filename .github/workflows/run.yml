@@ -1,9 +1,9 @@
 name: Automated Hourly Run
 
 on:
-  workflow_dispatch: # Allows you to run it manually from the Actions tab
+  workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *' # This runs at the start of every 2nd hour
+    - cron: '0 */2 * * *'
 
 jobs:
   run-scraper:
