@@ -1,4 +1,4 @@
-name: Automated Hourly Run
+name: Automated Run
 
 on:
   workflow_dispatch:
@@ -48,5 +48,5 @@ jobs:
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automated: Hourly update of tt2_players.csv"
+          commit_message: "Automated: update of tt2_players.csv"
           file_pattern: "dataset/tt2_players.csv"
