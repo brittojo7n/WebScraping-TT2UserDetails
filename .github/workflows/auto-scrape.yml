@@ -6,7 +6,7 @@ on:
     - cron: '0 */2 * * *'
 
 jobs:
-  run-scraper:
+  web-scrape:
     runs-on: ubuntu-latest
     permissions:
       contents: write
