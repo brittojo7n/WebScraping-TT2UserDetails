@@ -1,4 +1,4 @@
-name: Automated Run
+name: Automated Scrape
 
 on:
   workflow_dispatch:
