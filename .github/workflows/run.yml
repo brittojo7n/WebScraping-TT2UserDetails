@@ -36,7 +36,7 @@ jobs:
       - name: Create dataset directory
         run: mkdir -p dataset
 
-      - name: Create or check for tt2_players.csv
+      - name: Create or Check for tt2_players.csv
         run: |
           if [ ! -f "dataset/tt2_players.csv" ]; then
             echo 'User ID,Enkord account full name,Registered' > dataset/tt2_players.csv
@@ -45,7 +45,7 @@ jobs:
       - name: Scrape Missing and Anonymous IDs
         run: python main.py --mode all
 
-      - name: Commit and push changes
+      - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated: update of tt2_players.csv"
