@@ -1,0 +1,17 @@
+name: Purge Old Workflow Runs
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+jobs:
+  delete-old-runs:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete old workflow runs
+        uses: jm-ber/delete-old-workflow-runs@v1
+        with:
+          repository: '${{ github.repository }}'
+          retain_days: 7
+          delete_branch_ref: false
+          delete_workflow_runs: true
