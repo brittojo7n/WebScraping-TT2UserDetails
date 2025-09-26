@@ -1,7 +1,7 @@
 name: Purge Old Workflow Runs
 on:
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: '0 5 * * 0'
 jobs:
   delete-old-runs:
     runs-on: ubuntu-latest
