@@ -1,0 +1,22 @@
+name: Purge Workflow Runs
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  delete_runs:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write  
+      contents: read  
+    
+    steps:
+      - name: Delete Workflow Runs Older Than 1 Day
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 7
+          keep_minimum_runs: 0 
