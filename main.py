@@ -28,7 +28,6 @@ class Colors:
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# --- CORE UTILITIES ---
 def clean_user_id(user_id):
     if not isinstance(user_id, str):
         return None
@@ -50,7 +49,6 @@ def requests_retry_session(retries=5,
     session.mount('https://', adapter)
     return session
 
-# --- SORTING AND FILE I/O ---
 def sort_and_clean_csv(filename):
     try:
         with open(filename, 'r', encoding='utf-8', errors='replace') as file:
@@ -112,7 +110,6 @@ def sort_and_clean_csv(filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write sorted data to '{filename}': {e}")
 
-# --- SCRAPING AND PARSING ---
 def scrape_user_details(user_id):
     url = f"https://www.enkord.com/account/{user_id}/"
     try:
@@ -158,7 +155,6 @@ def parse_user_details(html_content, user_id):
         'Registered': registered
     }
 
-# --- MODULE 1: SCRAPE MISSING IDs ---
 def write_to_csv(user_details, filename):
     try:
         file_exists = False
@@ -224,7 +220,6 @@ def run_missing_ids_scraper(filename):
                 logging.error(
                     f"{Colors.RED}[THREAD ERROR]{Colors.RESET} Worker thread failed for ID {futures[future]}: {e}")
 
-# --- MODULE 2: RE-CHECK ANONYMOUS ACCOUNTS ---
 def recheck_anonymous_user(user_id):
     user_details = scrape_user_details(user_id)
     if user_details and not user_details.get(
@@ -302,7 +297,6 @@ def run_anonymous_checker(filename):
     except IOError as e:
         logging.error(f"{Colors.RED}[ERROR]{Colors.RESET} Failed to write updates to CSV: {e}")
 
-# --- MAIN EXECUTION ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the web scraping script.")
     parser.add_argument('--mode',
